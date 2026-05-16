@@ -1,0 +1,17 @@
+# Ignorar dependencias de Node (Frontend)
+node_modules/
+frontend/node_modules/
+
+# Ignorar archivos temporales y compilados de Java (Backend)
+notes-app/target/
+notes-app/.mvn/
+notes-app/mvnw
+notes-app/mvnw.cmd
+
+# ¡VITAL! Ignorar la base de datos local H2 para que no se bloquee
+notes-app/data/
+
+# Sistema
+.DS_Store
+.idea/
+.vscode/
