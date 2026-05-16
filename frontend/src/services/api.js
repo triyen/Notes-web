@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/notes';
+const API_URL = 'https://notes-web-ykfv.onrender.com/api/notes';
 const CAT_API_URL = 'http://localhost:8080/api/categories'; // <-- Revisá que esté esta línea
 
 export const getNotes = () => axios.get(API_URL);
