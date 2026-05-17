@@ -45,13 +45,18 @@ function App() {
   }
 
   // 3. EFECTOS
+// 3. EFECTOS
   useEffect(() => {
-    fetchNotes()
-  }, [viewArchived])
+    if (isLoggedIn) {
+      fetchNotes()
+    }
+  }, [viewArchived, isLoggedIn])
 
   useEffect(() => {
-    fetchCategories()
-  }, [viewArchived, selectedCategory])
+    if (isLoggedIn) {
+      fetchCategories()
+    }
+  }, [viewArchived, selectedCategory, isLoggedIn])
 
   // 4. HANDLERS (ACCIONES)
   const handleCreateCategory = async (e) => {
