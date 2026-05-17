@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import {
-  getNotes, getArchivedNotes, createNote, deleteNote, toggleArchive, updateNote, getCategories, createCategory, getNotesByCategory, login,
+  getNotes, getArchivedNotes, createNote, deleteNote, toggleArchive, updateNote, getCategories, createCategory, getNotesByCategory, login, register,
   updateCategory, deleteCategory
 } from './services/api'
 
 function App() {
   // 1. ESTADOS
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true')
+  const [isRegisterMode, setIsRegisterMode] = useState(false) // <-- Controla si muestra Login o Registro
   const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [notes, setNotes] = useState([])
@@ -17,7 +18,8 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [editingCategoryId, setEditingCategoryId] = useState(null) // Controla si editamos un tag
+  const [editingCategoryId, setEditingCategoryId] = useState(null) 
+
   // 2. FUNCIONES DE CARGA
   const fetchNotes = async () => {
     try {
@@ -58,20 +60,17 @@ function App() {
 
     try {
       if (editingCategoryId) {
-        // SI ESTAMOS EDITANDO
         await updateCategory(editingCategoryId, { name: newCategoryName })
         setEditingCategoryId(null)
       } else {
-        // SI ES NUEVA
         await createCategory({ name: newCategoryName })
       }
       setNewCategoryName('')
       fetchCategories()
-      fetchNotes() // Recargamos notas por si cambió el nombre del tag visible
+      fetchNotes() 
     } catch (error) {
       console.error("Error saving category:", error)
     }
-    
   }
 
   const handleSubmit = async (e) => {
@@ -114,6 +113,29 @@ function App() {
     }
   }
 
+  // NUEVO: Handler para registrar usuarios en Neon de forma segura
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    setLoginError('')
+    if (!loginCredentials.username.trim() || !loginCredentials.password.trim()) {
+      return setLoginError('Username and password are required')
+    }
+    try {
+      const response = await register(loginCredentials)
+      if (response.data.success) {
+        alert("¡Usuario creado, fiera! Ya podés iniciar sesión.")
+        setIsRegisterMode(false) // Lo mandamos al Login automáticamente
+        setLoginError('')
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setLoginError(error.response.data.message)
+      } else {
+        setLoginError('Error registering user. Username might already exist.')
+      }
+    }
+  }
+
   const handleLogout = () => {
     setIsLoggedIn(false)
     localStorage.removeItem('isLoggedIn')
@@ -140,7 +162,8 @@ function App() {
     await toggleArchive(id)
     fetchNotes()
   }
-const handleStartEditCategory = (cat) => {
+
+  const handleStartEditCategory = (cat) => {
     setEditingCategoryId(cat.id)
     setNewCategoryName(cat.name)
   }
@@ -156,17 +179,17 @@ const handleStartEditCategory = (cat) => {
       }
     }
   }
+
   const filteredNotes = notes.filter(note =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // 5. RENDEREADO CONDICIONAL (¡ACÁ ESTÁ EL CAMBIO!)
-  // Si NO está logueado, frena acá y devuelve la pantalla de login.
+  // 5. RENDEREADO CONDICIONAL DINÁMICO
   if (!isLoggedIn) {
     return (
       <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px', fontFamily: 'Arial', background: '#222', borderRadius: '8px', color: 'white', textAlign: 'center' }}>
-        <h2>Sign In</h2>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+        <h2>{isRegisterMode ? 'Create Account' : 'Sign In'}</h2>
+        <form onSubmit={isRegisterMode ? handleRegister : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
           <input
             type="text"
             placeholder="Username"
@@ -183,18 +206,27 @@ const handleStartEditCategory = (cat) => {
           />
           {loginError && <p style={{ color: '#d9534f', fontSize: '14px', margin: '0' }}>{loginError}</p>}
           <button type="submit" style={{ padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-            Login
+            {isRegisterMode ? 'Register' : 'Login'}
           </button>
         </form>
+
+        {/* Botoncito sutil para cambiar entre Login y Registro */}
+        <p style={{ marginTop: '20px', fontSize: '14px', color: '#aaa' }}>
+          {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <span 
+            onClick={() => { setIsRegisterMode(!isRegisterMode); setLoginError(''); }} 
+            style={{ color: '#4CAF50', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
+          >
+            {isRegisterMode ? 'Sign In' : 'Sign Up'}
+          </span>
+        </p>
       </div>
     )
   }
 
-  // Si SÍ está logueado, se saltea el "if" de arriba y ejecuta este return original tuyo.
+  // Rendereado original de la app con sesión iniciada
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Arial' }}>
-
-      {/* BOTÓN DE LOGOUT (Agregado arriba a la derecha para poder salir) */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
         <button onClick={handleLogout} style={{ padding: '6px 12px', background: '#d9534f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
           Logout
@@ -262,7 +294,6 @@ const handleStartEditCategory = (cat) => {
 
       {/* SECCIÓN DE FILTROS Y CATEGORÍAS */}
       <div style={{ background: '#2a2a2a', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '15px', boxSizing: 'border-box' }}>
-        {/* LA LUPITA (Buscador por texto) */}
         <div style={{ boxSizing: 'border-box' }}>
           <label style={{ color: '#ccc', display: 'block', marginBottom: '5px' }}>Search by Title:</label>
           <input
@@ -275,7 +306,6 @@ const handleStartEditCategory = (cat) => {
         </div>
 
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', boxSizing: 'border-box' }}>
-          {/* FILTRO POR CATEGORÍA */}
           <div style={{ flex: '1', minWidth: '150px', boxSizing: 'border-box' }}>
             <label style={{ color: '#ccc', display: 'block', marginBottom: '5px' }}>Filter by Category:</label>
             <select
@@ -290,7 +320,6 @@ const handleStartEditCategory = (cat) => {
             </select>
           </div>
 
-          {/* CREADOR DE CATEGORÍAS (TAGS) */}
           <div style={{ flex: '1', minWidth: '150px', boxSizing: 'border-box' }}>
             <label style={{ color: '#ccc', display: 'block', marginBottom: '5px' }}>
               {editingCategoryId ? 'Edit Tag Name:' : 'Create New Tag:'}
@@ -313,7 +342,6 @@ const handleStartEditCategory = (cat) => {
               )}
             </form>
 
-            {/* Mini lista de tags existentes para administrar */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '100px', overflowY: 'auto', background: '#222', padding: '5px', borderRadius: '4px' }}>
               {categories.map(cat => (
                 <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 5px', background: '#333', borderRadius: '3px', fontSize: '13px' }}>
@@ -373,4 +401,4 @@ const handleStartEditCategory = (cat) => {
   );
 }
 
-export default App
+export default App;

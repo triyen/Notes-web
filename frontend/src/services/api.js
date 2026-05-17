@@ -17,3 +17,4 @@ export const getNotesByCategory = (id) => axios.get(`${API_URL}/category/${id}`)
 export const login = (credentials) => axios.post('http://localhost:8080/api/auth/login', credentials);
 export const updateCategory = (id, category) => axios.put(`${CAT_API_URL}/${id}`, category);
 export const deleteCategory = (id) => axios.delete(`${CAT_API_URL}/${id}`);
+export const register = (credentials) => axios.post(`${API_URL}/api/auth/register`, credentials);
