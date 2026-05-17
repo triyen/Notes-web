@@ -127,7 +127,7 @@ function App() {
     try {
       const response = await register(loginCredentials)
       if (response.data.success) {
-        alert("¡Usuario creado, fiera! Ya podés iniciar sesión.")
+        alert("User registered successfully. You can now sign in.")
         setIsRegisterMode(false) 
         setLoginError('')
         setLoginCredentials({ username: '', password: '' }) // Limpia campos al terminar
