@@ -14,7 +14,8 @@ export const updateNote = (id, note) => axios.put(`${API_URL}/${id}`, note);
 export const getCategories = () => axios.get(CAT_API_URL);
 export const createCategory = (category) => axios.post(CAT_API_URL, category);
 export const getNotesByCategory = (id) => axios.get(`${API_URL}/category/${id}`);
-export const login = (credentials) => axios.post('http://localhost:8080/api/auth/login', credentials);
+
 export const updateCategory = (id, category) => axios.put(`${CAT_API_URL}/${id}`, category);
 export const deleteCategory = (id) => axios.delete(`${CAT_API_URL}/${id}`);
-export const register = (credentials) => axios.post(`${API_URL}/api/auth/register`, credentials);
+export const login = (credentials) => axios.post('https://notes-web-ykfv.onrender.com/api/auth/login', credentials);
+export const register = (credentials) => axios.post('https://notes-web-ykfv.onrender.com/api/auth/register', credentials);

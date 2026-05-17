@@ -7,7 +7,7 @@ import {
 function App() {
   // 1. ESTADOS
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true')
-  const [isRegisterMode, setIsRegisterMode] = useState(false) // <-- Controla si muestra Login o Registro
+  const [isRegisterMode, setIsRegisterMode] = useState(false) 
   const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' })
   const [loginError, setLoginError] = useState('')
   const [notes, setNotes] = useState([])
@@ -113,7 +113,6 @@ function App() {
     }
   }
 
-  // NUEVO: Handler para registrar usuarios en Neon de forma segura
   const handleRegister = async (e) => {
     e.preventDefault()
     setLoginError('')
@@ -124,8 +123,9 @@ function App() {
       const response = await register(loginCredentials)
       if (response.data.success) {
         alert("¡Usuario creado, fiera! Ya podés iniciar sesión.")
-        setIsRegisterMode(false) // Lo mandamos al Login automáticamente
+        setIsRegisterMode(false) 
         setLoginError('')
+        setLoginCredentials({ username: '', password: '' }) // Limpia campos al terminar
       }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -184,7 +184,7 @@ function App() {
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // 5. RENDEREADO CONDICIONAL DINÁMICO
+  // 5. RENDEREADO CONDICIONAL
   if (!isLoggedIn) {
     return (
       <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px', fontFamily: 'Arial', background: '#222', borderRadius: '8px', color: 'white', textAlign: 'center' }}>
@@ -210,11 +210,14 @@ function App() {
           </button>
         </form>
 
-        {/* Botoncito sutil para cambiar entre Login y Registro */}
         <p style={{ marginTop: '20px', fontSize: '14px', color: '#aaa' }}>
           {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}{' '}
           <span 
-            onClick={() => { setIsRegisterMode(!isRegisterMode); setLoginError(''); }} 
+            onClick={() => { 
+              setIsRegisterMode(!isRegisterMode); 
+              setLoginError(''); 
+              setLoginCredentials({ username: '', password: '' }); // <-- ACÁ LIMPIA EN EL TRASPASO
+            }} 
             style={{ color: '#4CAF50', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
           >
             {isRegisterMode ? 'Sign In' : 'Sign Up'}
@@ -224,7 +227,6 @@ function App() {
     )
   }
 
-  // Rendereado original de la app con sesión iniciada
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Arial' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
