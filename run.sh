@@ -8,7 +8,7 @@ echo -e "${GREEN}Iniciando el despliegue del Challenge...${NC}"
 
 # 2. Levantar el Backend (Java - Spring Boot)
 echo -e "${GREEN}Levantando el Backend en el puerto 8080...${NC}"
-cd notes-app
+cd backend
 # Le damos permisos de ejecución al wrapper de Maven por las dudas
 chmod +x mvnw
 ./mvnw spring-boot:run &
